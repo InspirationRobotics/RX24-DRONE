@@ -1,14 +1,14 @@
-from utils.rclpy_handler import Topic_Service, RCLPY_Handler
+from utils.rclpy_handler import RCLPY_Handler, Publisher, Subscriber, Client
 from std_msgs.msg import String
 from ardupilot_msgs.msg import GlobalPosition
 from ardupilot_msgs.srv import ArmMotors, ModeSwitch
 import time
 import threading
 
-testPublish = Topic_Service("test", GlobalPosition, "publisher")
-testSub = Topic_Service("test", GlobalPosition, "subscriber")
-testClient = Topic_Service("/ap/arm_motors", ArmMotors, "client")
-testClient2 = Topic_Service("/ap/mode_switch", ModeSwitch, "client")
+testPublish = Publisher("test", GlobalPosition)
+testSub = Subscriber("test", GlobalPosition)
+testClient = Client("/ap/arm_motors", ArmMotors)
+testClient2 = Client("/ap/mode_switch", ModeSwitch)
 
 testNode = RCLPY_Handler("testNode")
 

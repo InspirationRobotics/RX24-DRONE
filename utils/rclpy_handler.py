@@ -1,53 +1,8 @@
 import rclpy
 import rclpy.client
-from rclpy.node import Node
 import rclpy.publisher
-
-class Topic_Service:
-    def __init__(self, name : str, class_type, usage_type : str):
-        self.__name = name
-        self.__class_type = class_type
-        self.__usage_type = usage_type
-
-    # CLIENT ONLY
-    def set_client(self, client : rclpy.client.Client):
-        self.__client = client
-
-    def get_client(self) -> rclpy.client.Client:
-        return self.__client
-
-    # PUBLISHER ONLY
-
-    def set_publisher(self, publisher : rclpy.publisher.Publisher):
-        self.__publisher = publisher
-
-    def get_publisher(self) -> rclpy.publisher.Publisher:
-        return self.__publisher
-
-    # SUBSCRIBER ONLY
-
-    def set_data(self, data):
-        self.__data = data
-
-    def get_data(self):
-        data = self.__data
-        self.__data = None
-        return data
-
-    def get_data_last(self):
-        return self.__data
-
-    # GENERIC FUNCTIONS
-
-    def get_type(self):
-        return self.__class_type
-
-    def get_name(self):
-        return self.__name
-    
-    def get_usage_type(self):
-        return self.__usage_type
-
+from rclpy.node import Node
+from .topic_service import Publisher, Subscriber, Client
 
 class RCLPY_Handler:
     def __init__(self, node : str):
@@ -70,25 +25,25 @@ class RCLPY_Handler:
             rclpy.shutdown()
             self.connected = False
 
-    def create_topic_publisher(self, topic: Topic_Service):
+    def create_topic_publisher(self, topic: Publisher):
         topic.set_publisher(self.node.create_publisher(topic.get_type(), topic.get_name(), 10))
         
-    def publish_topic(self, topic: Topic_Service, data):
+    def publish_topic(self, topic: Publisher, data):
         try:
             topic.get_publisher().publish(data)
         except Exception as e:
-            self.log("Failed to publish to topic " + topic.get_name())
+            self.log("Failed to publish to topic: " + topic.get_name())
             self.log(f"ERROR: {e}")
 
-    def create_topic_subscriber(self, topic: Topic_Service, function=None):
+    def create_topic_subscriber(self, topic: Subscriber, function=None):
         if function == None:
             function = topic.set_data
         self.node.create_subscription(topic.get_type(), topic.get_name(), function, 10)
 
-    def create_service_client(self, topic: Topic_Service):
+    def create_service_client(self, topic: Client):
         topic.set_client(self.node.create_client(topic.get_type(), topic.get_name()))
 
-    def send_service_request(self, service: Topic_Service, data, timeout=30):
+    def send_service_request(self, service: Client, data, timeout=30):
         try:
             srv = service.get_name()
             client = service.get_client()
@@ -99,4 +54,5 @@ class RCLPY_Handler:
             call_srv = client.call_async(data)
             return call_srv.result()
         except Exception as e:
+            self.log("Failed to request service: " + srv)
             self.log(f"ERROR: {e}")
