@@ -1,5 +1,6 @@
 from utils.rclpy_handler import Topic_Service, RCLPY_Handler
 from std_msgs.msg import String
+from ardupilot_msgs.msg import GlobalPosition
 import time
 import threading
 
