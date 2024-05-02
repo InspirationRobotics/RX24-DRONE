@@ -78,7 +78,7 @@ class RCLPY_Handler:
             topic.get_publisher().publish(data)
         except Exception as e:
             self.log("Failed to publish to topic " + topic.get_name())
-            self.log("ERROR: " + e)
+            self.log(f"ERROR: {e}")
 
     def create_topic_subscriber(self, topic: Topic_Service, function=None):
         if function == None:
@@ -88,7 +88,7 @@ class RCLPY_Handler:
     def create_service_client(self, topic: Topic_Service):
         topic.set_client(self.node.create_client(topic.get_type(), topic.get_name()))
 
-    def service_caller(self, service: Topic_Service, data, timeout=30):
+    def send_service_request(self, service: Topic_Service, data, timeout=30):
         try:
             srv = service.get_name()
             client = service.get_client()
@@ -99,4 +99,4 @@ class RCLPY_Handler:
             call_srv = client.call_async(data)
             return call_srv.result()
         except Exception as e:
-            print("ERROR: " + e)
+            self.log(f"ERROR: {e}")

@@ -24,3 +24,6 @@ Before running in a new terminal you will also need to source the workspace ever
 ```
 source msg_ws/install/setup.bash
 ```
+
+### Copter Mode Switch
+https://mavlink.io/en/messages/ardupilotmega.html#COPTER_MODE
