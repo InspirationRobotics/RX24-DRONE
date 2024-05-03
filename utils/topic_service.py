@@ -1,6 +1,7 @@
 import rclpy
 import rclpy.client
 import rclpy.publisher
+import rclpy.subscription
 
 class ROS_Service:
     def __init__(self, name : str, class_type, usage_type : str):
@@ -33,6 +34,13 @@ class Subscriber(ROS_Service):
 
     def __init__(self, name: str, class_type):
         super().__init__(name, class_type, "subscriber")
+        self.__data = None
+
+    def set_subscription(self, subscription : rclpy.subscription.Subscription):
+        self.__subscription = subscription
+
+    def get_subscription(self) -> rclpy.subscription.Subscription:
+        return self.__subscription
 
     def set_data(self, data):
         self.__data = data

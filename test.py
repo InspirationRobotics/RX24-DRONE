@@ -13,10 +13,14 @@ testClient2 = Client("/ap/mode_switch", ModeSwitch)
 testNode = RCLPY_Handler("testNode")
 
 def test_callback(data : GlobalPosition):
-    print("Received: " + str(data.latitude))
+    testNode.log("Received: " + str(data.latitude))
+
+def test_callback2(data : GlobalPosition):
+    testNode.log("Changed: " + str(data.latitude))
 
 testNode.create_topic_publisher(testPublish)
 testNode.create_topic_subscriber(testSub, test_callback)
+testNode.edit_topic_subscriber(testSub, test_callback2)
 testNode.create_service_client(testClient)
 testNode.create_service_client(testClient2)
 

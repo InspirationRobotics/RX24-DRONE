@@ -1,6 +1,5 @@
 import rclpy
-import rclpy.client
-import rclpy.publisher
+from rclpy import qos
 from rclpy.node import Node
 from .topic_service import Publisher, Subscriber, Client
 
@@ -9,11 +8,19 @@ class RCLPY_Handler:
         rclpy.init()
         self.node = Node(node)
         self.connected = False
+        self.create_QoS()
+
+    def create_QoS(self):
+        self.qos = qos.QoSProfile(
+            reliability=qos.ReliabilityPolicy.BEST_EFFORT, 
+            durability=qos.DurabilityPolicy.VOLATILE, 
+            depth=1
+        )
 
     def log(self, msg : str):
         self.node.get_logger().info(msg)
 
-    def connect(self, rate: int = 5):
+    def connect(self):
         self.connected = True
         self.log("rclpy connected!")
         rclpy.spin(self.node)
@@ -38,7 +45,13 @@ class RCLPY_Handler:
     def create_topic_subscriber(self, topic: Subscriber, function=None):
         if function == None:
             function = topic.set_data
-        self.node.create_subscription(topic.get_type(), topic.get_name(), function, 10)
+        topic.set_subscription(self.node.create_subscription(topic.get_type(), topic.get_name(), function, self.qos))
+
+    def edit_topic_subscriber(self, topic: Subscriber, function=None):
+        if function == None:
+            function = topic.set_data
+        self.node.destroy_subscription(topic.get_subscription())
+        self.create_topic_subscriber(topic, function)
 
     def create_service_client(self, topic: Client):
         topic.set_client(self.node.create_client(topic.get_type(), topic.get_name()))
