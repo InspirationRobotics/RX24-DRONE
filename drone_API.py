@@ -99,25 +99,53 @@ class drone_API:
         self.edit_subscribers()
 
     def edit_subscribers(self):
-        #self.handler.edit_topic_subscriber(SUB_BATTERY, self.batt_cb)
+        self.handler.edit_topic_subscriber(SUB_BATTERY, self.batt_cb)
         pass
 
-    # def batt_cb(self, msg: BatteryState):
-    #     self.handler.log(f"Battery voltage: {msg.voltage} V")
+    def batt_cb(self, msg: BatteryState):
+        # self.handler.log(f"Battery voltage: {msg.voltage} V")
+        pass
 
     def init_clients(self):
         clients = [v for k, v in globals().items() if isinstance(v, Client)]
         for cli in clients:
             self.handler.create_service_client(cli)
+
+    # DRONE CONTROL FUNCTIONS
+
+    def arm(self):
+        while not self.handler.connected: pass
+        self.handler.log("Arming motors ...")
+        data = ArmMotors.Request()
+        data.arm = True
+        self.handler.send_service_request(CLI_ARM, data)
+        self.handler.log("Motors armed!")
+
+    def disarm(self):
+        while not self.handler.connected: pass
+        self.handler.log("Disarming motors ...")
+        data = ArmMotors.Request()
+        data.arm = False
+        self.handler.send_service_request(CLI_ARM, data)
+        self.handler.log("Motors disarmed!")
+
+    def switch_mode(self, mode : str):
+        while not self.handler.connected: pass
+        mode_int = globals()["MODE_" + mode.upper()]
+        self.handler.log(f"Switching mode to {mode.upper()} ...")
+        data = ModeSwitch.Request()
+        data.mode = mode_int
+        self.handler.send_service_request(CLI_MODE, data)
+        self.handler.log(f"Mode switched to {mode.upper()}!")
     
 if __name__ == "__main__":
     handler = RCLPY_Handler("drone_API")
     drone = drone_API(handler)
     drone.connect()
-    for i in range(100):
-        data : Time = SUB_TIME.get_data_last()
-        if(data != None):
-            print(data.sec, data.nanosec)
-        time.sleep(0.1)
+    drone.arm()
+    drone.switch_mode("guided")
+    time.sleep(3)
+    drone.switch_mode("loiter")
+    drone.disarm()
     drone.disconnect()
     print("Connection closed.")

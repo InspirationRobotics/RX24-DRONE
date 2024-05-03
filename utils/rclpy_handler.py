@@ -20,6 +20,9 @@ class RCLPY_Handler:
     def log(self, msg : str):
         self.node.get_logger().info(msg)
 
+    def log_error(self, msg : str):
+        self.node.get_logger().error(msg)
+
     def connect(self):
         self.connected = True
         self.log("rclpy connected!")
@@ -39,13 +42,17 @@ class RCLPY_Handler:
         try:
             topic.get_publisher().publish(data)
         except Exception as e:
-            self.log("Failed to publish to topic: " + topic.get_name())
-            self.log(f"ERROR: {e}")
+            self.log_error("Failed to publish to topic: " + topic.get_name())
+            self.log_error(f"ERROR: {e}")
 
     def create_topic_subscriber(self, topic: Subscriber, function=None):
-        if function == None:
-            function = topic.set_data
-        topic.set_subscription(self.node.create_subscription(topic.get_type(), topic.get_name(), function, self.qos))
+        try:
+            if function == None:
+                function = topic.set_data
+            topic.set_subscription(self.node.create_subscription(topic.get_type(), topic.get_name(), function, self.qos))
+        except Exception as e:
+            self.log_error("Failed to subscribe to topic: " + topic.get_name())
+            self.log_error(f"ERROR: {e}")
 
     def edit_topic_subscriber(self, topic: Subscriber, function=None):
         if function == None:
@@ -67,5 +74,5 @@ class RCLPY_Handler:
             call_srv = client.call_async(data)
             return call_srv.result()
         except Exception as e:
-            self.log("Failed to request service: " + srv)
-            self.log(f"ERROR: {e}")
+            self.log_error("Failed to request service: " + srv)
+            self.log_error(f"ERROR: {e}")
