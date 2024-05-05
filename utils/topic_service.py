@@ -45,12 +45,12 @@ class Subscriber(ROS_Service):
     def set_data(self, data):
         self.__data = data
 
-    def get_data(self):
+    def get_new_data(self):
         data = self.__data
         self.__data = None
         return data
 
-    def get_data_last(self):
+    def get_latest_data(self):
         return self.__data
 
 class Client(ROS_Service):
