@@ -4,12 +4,10 @@ import rclpy
 import time
 from enum import Enum
 from utils.message import Message
-from RCLPY_Handler_Eesh import RCLPY_Handler
-from topic_service import Publisher, Subscriber
+from utils.rclpy_handler import RCLPY_Handler
+from utils.topic_service import Publisher, Subscriber
 
-import common_msgs.msg
-
-# JETSON NANO GPIO INTERFACE CONFIGURATION
+import action_msgs.msg
 
 try:
     import Jetson.GPIO as GPIO  # Use Jetson.GPIO 
@@ -19,8 +17,7 @@ except ImportError:
         exit()
 
 # PINOUT (Jetson Nano BCM pin numbers)
-# Adjust the pin numbers if needed based on the Jetson Nano GPIO layout
-gpio_pins = [26, 19, 13, 6, 5]  # Use BCM numbering here
+gpio_pins = [26, 19, 13, 6, 5]  # BCM numbering
 
 class Wamv_talker():
 
@@ -32,11 +29,11 @@ class Wamv_talker():
         self.rclpy_handler = RCLPY_Handler()
         self.refresh_rate = refresh_rate
 
-        self.wamv_command_msg = Message("/wamv_comms/mode_set", common_msgs.msg.GoalStatus)
+        self.wamv_command_msg = Message("/wamv_comms/mode_set", action_msgs.msg.GoalStatus)
 
     
         self.wamv_command_pub = Publisher(self.wamv_command_msg.get_name(), self.wamv_command_msg.get_type())
-        self.wamv_status_sub = Subscriber("/wamv_comms/status", common_msgs.msg.GoalStatus)
+        self.wamv_status_sub = Subscriber("/wamv_comms/status", action_msgs.msg.GoalStatus)
         
         self.init_topics()
         self.init_gpio()
@@ -46,7 +43,7 @@ class Wamv_talker():
         self.rclpy_handler.connect()
 
     def init_gpio(self):
-        GPIO.setmode(GPIO.BCM)  # Jetson Nano uses BCM mode as well
+        GPIO.setmode(GPIO.BCM)  # Jetson Nano uses BCM mode
         GPIO.setup(gpio_pins, GPIO.OUT)
         self.rclpy_handler.log(self, 'GPIO pins going OUT')
 
@@ -75,7 +72,7 @@ class Wamv_talker():
 
 
 def set_gpio(gpio, set_input):
-    # GPIO setup for Jetson Nano, similar to RPi.GPIO
+    # GPIO setup for Jetson Nano
     state = GPIO.IN if set_input else GPIO.OUT
     for pin in gpio:
         GPIO.setup(pin, state)

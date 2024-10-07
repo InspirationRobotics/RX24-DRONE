@@ -1,4 +1,4 @@
- This class defines a wrapper for ROS messages, storing the topic name, message type, and data, with methods to set and retrieve the message data, type, and name.
+#This class defines a wrapper for ROS messages, storing the topic name, message type, and data, with methods to set and retrieve the message data, type, and name.
 
 class Message():
     def __init__(self, name: str, class_type):
