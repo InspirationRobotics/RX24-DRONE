@@ -7,7 +7,7 @@ from utils.message import Message
 from utils.rclpy_handler import RCLPY_Handler
 from utils.topic_service import Publisher, Subscriber
 
-import action_msgs.msg
+import std_msgs.msg
 
 try:
     import Jetson.GPIO as GPIO  # Use Jetson.GPIO 
@@ -29,11 +29,10 @@ class Wamv_talker():
         self.rclpy_handler = RCLPY_Handler()
         self.refresh_rate = refresh_rate
 
-        self.wamv_command_msg = Message("/wamv_comms/mode_set", action_msgs.msg.GoalStatus)
+        self.wamv_command_msg = Message("/wamv_comms/mode_set", std_msgs.msg.GoalStatus)
 
-    
         self.wamv_command_pub = Publisher(self.wamv_command_msg.get_name(), self.wamv_command_msg.get_type())
-        self.wamv_status_sub = Subscriber("/wamv_comms/status", action_msgs.msg.GoalStatus)
+        self.wamv_status_sub = Subscriber("/wamv_comms/status", std_msgs.msg.GoalStatus)
         
         self.init_topics()
         self.init_gpio()
@@ -52,13 +51,22 @@ class Wamv_talker():
         GPIO.output(gpio_pins, GPIO.HIGH if state else GPIO.LOW)
         self.rclpy_handler.log(f"GPIO pins set to {'HIGH' if state else 'LOW'}.")
 
+    def publish_command(self, mode):
+        '''Publishes a WAMV command to change the mode.'''
+        # Fill the message data (this depends on the structure of GoalStatus)
+        data = std_msgs.msg.GoalStatus()
+        data.goal_id.id = str(mode)  # Set the mode in the GoalStatus message, adjust as needed
+        self.wamv_command_msg.set_data(data)  # Set data inside the Message object
+
+        # Publish the message using the RCLPY handler
+        self.rclpy_handler.publish_topic(self.wamv_command_pub, self.wamv_command_msg.get_data())
+
     def gpio_cleanup(self):
         GPIO.cleanup()
         self.rclpy_handler.log("GPIO cleanup complete")
 
     def init_topics(self):
         self.rclpy_handler.create_topic_publisher(self.wamv_command_pub)
-
         self.rclpy_handler.create_topic_subscriber(self.wamv_status_sub, self.status_callback)
 
     def status_callback(self):
